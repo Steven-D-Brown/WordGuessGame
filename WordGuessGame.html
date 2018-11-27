@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Roman History Hangman</title>
+</head>
+
+<body>
+
+  <div>
+    <div><p id="notification">Welcome to Roman History Hangman! Press any key to begin!</p></div>
+    <div><p id = "winsCount"></p></div>
+    <div><p id = "lossesCount"></p></div>
+    <div><p id = "guessedLettersRec"></p></div>
+    <div><p id = "guessesLeftCount"></p></div>
+    <div><p id = "knownDisplay"></p></div>
+  </div>
+
+  <script>
+    var hasBegun = false;
+    var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+    // wordBank to store letters, hints to store hints, guessed letters to track which letters have ben guessed, and used words to track whether each word has been used
+    //all except guessed letters are equal length by default
+    var wordBank = [
+        {w: "gaul", used: false},
+        {w: "hannibal", used: false},
+        {w: "legion", used: false},
+        {w: "cicero", used: false},
+        {w: "romulus", used: false},
+        {w: "pantheon", used: false},
+        {w: "augustus", used: false},
+        {w: "latin", used: false},
+        {w: "spartacus", used: false},
+        {w: "saturnalia", used: false},
+        {w: "pompey", used: false},
+        {w: "pompeii", used: false},
+        {w: "dictator", used: false}];
+    var guessedLetters = [];
+    var randIndex;
+    var chosenWord;
+    var knownWord = [];
+    //This will be the representation of the chosen word for the game; it will start as a bunch of spaced underscores but will be replaced by correctly guessed letters
+    //Start as empty because we don't know the length of the first-chosen word
+
+    var wins = 0;
+    var losses = 0;
+    var remainingGuesses = 12; //start at 12, go down
+    
+    //Create variables that hold references to the places in the HTML where we want to display things
+    var notificationText = document.getElementById("notification");
+    var winsText = document.getElementById("winsCount");
+    var lossesText = document.getElementById("lossesCount");
+    var guessedLettersText = document.getElementById("guessedLettersRec");
+    var guessesLeftText = document.getElementById("guessesLeftCount");
+    var knownDisplayText = document.getElementById("knownDisplay");
+
+    //resets all words to unused; should be called once all words are used
+    function resetWordUsage(){
+        for(var i = 0; i < wordBank.length; i++)
+            wordBank[i].used = false;
+    }
+
+    function chooseNewWord(){
+        var allUsed = true;//set to true by default; changed in the event a wordbank element.used is false
+        for(var iIs = 0; iIs < wordBank.length; iIs++){/*call it iIs for readability in if statement; "if wordbank[i] Is used"; i know this could have been easier to read
+                                                         but this works too*/
+            if(!wordBank[iIs].used){ //if the element is not used, not all are used and we can continue without reseting
+                allUsed = false;
+                break;
+            }
+        }
+        if(allUsed)
+            resetWordUsage();
+        do{
+            randIndex = Math.floor(Math.random() * wordBank.length);
+        }while(wordBank[randIndex].used)
+        guessedLetters = []; //no more guessed letters
+        guessedLettersText.textContent = "Guessed letters: " + guessedLetters;
+        chosenWord = wordBank[randIndex].w;
+        wordBank[randIndex].used = true;
+        knownWord = [];
+        for(var i = 0; i < chosenWord.length; i++)
+            knownWord.push("-");
+    }
+
+    function checkAndReplace(userInput){
+        for(var i = 0; i < chosenWord.length; i++){
+            if(chosenWord[i]===userInput){
+                knownWord[i] = userInput;
+            }
+        }
+        remainingGuesses--;
+        guessesLeftText.textContent = "Guesses Left: " + remainingGuesses;
+        var s = "";
+        for(var u = 0; u < chosenWord.length; u++)
+            s += knownWord[u];
+        knownDisplayText.textContent = s;
+        guessedLetters.push(userInput);
+    }
+
+    //choose a word, set knownWord to be a set of underscores, equaling the length of the chosen word
+    function start(){
+        notificationText.textContent = "";
+        chooseNewWord();
+        knownWord = [];
+        for(var i = 0; i < chosenWord.length; i++)
+            knownWord.push("-");
+        winsText.textContent = "Wins: " + wins;
+        lossesText.textContent = "Losses: " + losses;
+        guessedLettersText = "Guessed Letters: "; //No need to add anything because no letters guessed
+        guessesLeftText = "Guesses Left: " + remainingGuesses;
+    }
+
+    //This function is run whenever the user presses a key.
+    document.onkeypress = function(event) {
+        //Start the game after one key press.
+        if(!hasBegun){
+            start();
+            hasBegun = true;
+            console.log(chosenWord);
+            return;
+        }
+        
+      //Determines which key was pressed
+      var userGuess = event.key;//needs check and replace
+      if(letters.indexOf(userGuess) > -1){ //if userGuess was a letter
+        userGuess = userGuess.toLowerCase();
+        if(guessedLetters.indexOf(userGuess) === -1){ //and that letter has not yet been guessed
+            checkAndReplace(userGuess);
+            guessedLettersText.innerHTML = "Guessed Letters: " + guessedLetters;
+        }
+        else   
+            return; //if they already guessed it, then we can just ignore the input
+        }
+    }
+  </script>
+</body>
+</html>
